@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSS News Feeder</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+        }
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            border-radius: 10px;
+            text-align: center;
+        }
+        h1 {
+            color: #ff6b6b;
+            font-size: 32px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .news-item {
+            background: linear-gradient(135deg, #fbc2eb, #a6c1ee);
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease-in-out;
+            text-align: left;
+        }
+        .news-item:hover {
+            transform: scale(1.05);
+        }
+        .news-item a {
+            text-decoration: none;
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .news-item p {
+            font-size: 14px;
+            color: #fff;
+            margin-top: 5px;
+        }
+        .loading {
+            font-size: 16px;
+            color: #333;
+            margin-top: 20px;
+        }
+        .refresh-button {
+            margin-top: 15px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .refresh-button:hover {
+            background: #e63946;
+        }
+        .search-bar {
+            width: 80%;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Latest News</h1>
+        <input type="text" id="search" class="search-bar" placeholder="Search news..." onkeyup="filterNews()">
+        <button class="refresh-button" onclick="fetchRSS()">Refresh</button>
+        <div id="news" class="loading">Loading news...</div>
+    </div>
+    <script>
+        async function fetchRSS() {
+            const url = 'https://timesofindia.indiatimes.com/rssfeeds/296589292.cms'; // Times of India RSS feed
+            try {
+                const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${url}`);
+                const data = await response.json();
+                const newsContainer = document.getElementById('news');
+                newsContainer.innerHTML = '';
+                data.items.forEach(item => {
+                    const newsItem = document.createElement('div');
+                    newsItem.classList.add('news-item');
+                    newsItem.innerHTML = `<a href="${item.link}" target="_blank">${item.title}</a><p>${new Date(item.pubDate).toDateString()}</p>`;
+                    newsContainer.appendChild(newsItem);
+                });
+            } catch (error) {
+                document.getElementById('news').innerHTML = 'Failed to load news.';
+                console.error('Error fetching RSS:', error);
+            }
+        }
+
+        function filterNews() {
+            const searchValue = document.getElementById('search').value.toLowerCase();
+            const newsItems = document.querySelectorAll('.news-item');
+            newsItems.forEach(item => {
+                const title = item.querySelector('a').innerText.toLowerCase();
+                if (title.includes(searchValue)) {
+                    item.style.display = "block";
+                } else {
+                    item.style.display = "none";
+                }
+            });
+        }
+
+        fetchRSS();
+    </script>
+</body>
+</html>
